@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Authio Ruby SDK — passwordless, multi-org auth for B2B Rails apps."
   spec.description = "Verify Authio session JWTs against the JWKS, mint magic-link sign-in URLs, " \
                      "and integrate with Rails controllers via `before_action :authenticate_authio!`."
-  spec.homepage = "https://github.com/tcast/authio_ruby"
+  spec.homepage = "https://github.com/authio-com/authio_ruby"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
