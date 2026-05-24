@@ -10,6 +10,21 @@
 Authio Ruby SDK. Verifies session JWTs against Authio's JWKS, builds hosted
 sign-in URLs, and slots into Rails controllers via a `before_action` helper.
 
+## What's new — 2026-05-23 WorkOS-parity sprint
+
+The Authio API gained four new product surfaces this sprint
+([`authio_proto`](https://github.com/authio-com/authio_proto)). The Ruby gem already verifies the new JWT
+shape end-to-end (`claims["roles"]` and `claims["permissions"]` ride
+along on every customer session); idiomatic helpers for the new
+write-side endpoints are queued for the next release. Reference docs:
+
+- Embeddable widgets — [docs.authio.com/widgets/overview](https://docs.authio.com/widgets/overview)
+- Synchronous Actions — [docs.authio.com/actions/overview](https://docs.authio.com/actions/overview)
+  (Sinatra signature verification snippet on
+  [docs.authio.com/actions/signature-verification](https://docs.authio.com/actions/signature-verification))
+- DCR / CIMD / MCP — [docs.authio.com/concepts/dynamic-client-registration](https://docs.authio.com/concepts/dynamic-client-registration)
+- Roles + permissions — [docs.authio.com/concepts/roles-and-permissions](https://docs.authio.com/concepts/roles-and-permissions)
+
 ## Install
 
 ```ruby
