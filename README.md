@@ -7,6 +7,10 @@
 
 # authio (Ruby gem)
 
+> Part of **[Authio Lobby](https://authio.com/products/lobby)** —
+> Authio's drop-in passwordless authentication. Learn more at
+> https://authio.com/products/lobby.
+
 Authio Ruby SDK. Verifies session JWTs against Authio's JWKS, builds hosted
 sign-in URLs, and slots into Rails controllers via a `before_action` helper.
 
