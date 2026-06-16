@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "jwt", "~> 2.7"
+  spec.add_dependency "jwt-eddsa", "~> 0.9"
 
   spec.add_development_dependency "rspec", "~> 3.12"
   spec.add_development_dependency "webmock", "~> 3.18"

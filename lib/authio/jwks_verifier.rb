@@ -2,6 +2,7 @@
 
 require "json"
 require "jwt"
+require "jwt/eddsa"
 require "net/http"
 require "uri"
 
