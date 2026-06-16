@@ -46,8 +46,11 @@ bundle install
 # config/initializers/authio.rb
 Authio.configure do |config|
   config.api_key = ENV.fetch("AUTHIO_SECRET_KEY", "")
+  # Management API (orgs, users, webhooks). JWT verify uses identity.authio.com.
   config.api_url = ENV.fetch("AUTHIO_API_URL", "https://api.authio.com")
   config.publishable_key = ENV.fetch("AUTHIO_PUBLISHABLE_KEY", "")
+  # JWKS + issuer for session JWT verify (EdDSA). Defaults to api_url if unset.
+  config.issuer = ENV.fetch("AUTHIO_ISSUER", "https://identity.authio.com")
 end
 ```
 
