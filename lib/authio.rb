@@ -5,6 +5,7 @@ require_relative "authio/configuration"
 require_relative "authio/session"
 require_relative "authio/jwks_verifier"
 require_relative "authio/client"
+require_relative "authio/passkeys"
 require_relative "authio/errors"
 
 # Authio — passwordless, multi-org auth for B2B Ruby / Rails apps.

@@ -33,7 +33,7 @@ write-side endpoints are queued for the next release. Reference docs:
 
 ```ruby
 # Gemfile
-gem "authio", "~> 0.1"
+gem "authio", "~> 0.2"
 ```
 
 ```bash
@@ -89,9 +89,58 @@ end
 | `client.verify_token(token)`                      | Verify JWT vs cached JWKS. Returns `Session` or `nil`. |
 | `client.sign_in_url(redirect_url: "...")`         | Build the hosted-UI redirect URL.                 |
 | `client.start_magic_link(email:, redirect_url:)`  | POST `/v1/auth/magic-link/start`. Useful for tests. |
+| `Authio::Passkeys.list_passkeys(...)`             | List passkeys for the signed-in user.               |
+| `Authio::Passkeys.rename_passkey(...)`            | Rename a passkey nickname.                          |
+| `Authio::Passkeys.revoke_passkey(...)`            | Revoke a passkey.                                   |
+| `Authio::Passkeys.enroll_passkey_url(...)`        | Mint register-intent + build hosted-UI enroll URL.  |
 
 `Authio::Session` exposes `session_id`, `user_id`, `org_id`, `role`,
 `expires_at`, `claims`, `impersonation?`, `impersonator_email`.
+
+## Passkeys after signup
+
+The Ruby gem does not run WebAuthn ceremonies server-side. After a user
+signs up and you have their session access token, redirect them to the
+hosted sign-in UI to add a passkey:
+
+```ruby
+require "authio"
+
+token = cookies[:authio_session]
+api_url = ENV.fetch("AUTHIO_API_URL", "https://api.authio.com")
+project_id = ENV.fetch("AUTHIO_PROJECT_ID")
+sign_in_url = ENV.fetch("AUTHIO_SIGN_IN_URL") # hosted UI base, e.g. https://auth.acme.com
+
+# List / rename / revoke (server-side)
+devices = Authio::Passkeys.list_passkeys(
+  access_token: token,
+  project_id: project_id,
+  api_url: api_url,
+)
+Authio::Passkeys.rename_passkey(
+  access_token: token,
+  project_id: project_id,
+  api_url: api_url,
+  credential_id: devices.first.id,
+  name: "Work Mac",
+)
+
+# Enroll — redirect the browser (primary path for Rails apps)
+enroll_url = Authio::Passkeys.enroll_passkey_url(
+  access_token: token,
+  project_id: project_id,
+  api_url: api_url,
+  sign_in_url: sign_in_url,
+  email: current_user.email,
+  return_url: request.original_url,
+  next: "/account/security",
+)
+redirect_to enroll_url, allow_other_host: true
+```
+
+Lower-level helpers: `mint_passkey_register_intent` and
+`build_enroll_passkey_url` when you want to split intent minting from URL
+construction.
 
 ## Requirements
 

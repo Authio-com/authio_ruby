@@ -22,6 +22,8 @@ RSpec.describe Authio::Client do
     end
 
     it "returns nil for an invalid JWT" do
+      stub_request(:get, "https://api.example.test/v1/auth/.well-known/jwks.json")
+        .to_return(status: 200, body: { keys: [] }.to_json, headers: { "Content-Type" => "application/json" })
       expect(client.verify_token("not-a-real-jwt")).to be_nil
     end
 
