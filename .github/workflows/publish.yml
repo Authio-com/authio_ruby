@@ -26,8 +26,7 @@ on:
 #    - Store as org/repo secret `RUBYGEMS_API_KEY` (maps to `GEM_HOST_API_KEY`).
 #
 # GitHub Actions cannot reference `secrets.*` inside an `if:`, so credentials are
-# hoisted to job-level `env` and publish steps gate on those values. Specs always
-# run so the workflow stays GREEN before secrets/variables exist.
+# hoisted to job-level `env`. At least one publishing path is mandatory.
 permissions:
   contents: read
   id-token: write
@@ -47,6 +46,12 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
       - run: bundle exec rspec
+      - name: Require RubyGems publishing configuration
+        run: |
+          if [ "${RUBYGEMS_TRUSTED_PUBLISHING:-}" != "true" ] && [ -z "${RUBYGEMS_API_KEY:-}" ]; then
+            echo "::error::Configure trusted publishing or RUBYGEMS_API_KEY for a release tag"
+            exit 1
+          fi
       - name: Publish to RubyGems (trusted publishing / OIDC)
         if: env.RUBYGEMS_TRUSTED_PUBLISHING == 'true'
         uses: rubygems/release-gem@052cc82692552de3ef2b81fd670e41d13cba8092 # v1.4.0
@@ -57,8 +62,3 @@ jobs:
           gem push authio-*.gem
         env:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
-      - name: Skip publish (no RubyGems credentials configured)
-        if: env.RUBYGEMS_TRUSTED_PUBLISHING != 'true' && env.RUBYGEMS_API_KEY == ''
-        run: |
-          echo "::notice::Neither RUBYGEMS_TRUSTED_PUBLISHING nor RUBYGEMS_API_KEY is configured; skipping publish."
-          echo "Wire Trusted Publishing (set vars.RUBYGEMS_TRUSTED_PUBLISHING=true) or add RUBYGEMS_API_KEY, then re-tag to release."
