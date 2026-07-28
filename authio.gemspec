@@ -24,7 +24,9 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb", "README.md", "LICENSE", "authio.gemspec"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "jwt", "~> 2.7"
+  # >= 2.10.3 excludes the empty-key HMAC bypass (GHSA / CVE-2026-44351
+  # sibling); staying under 3.0 keeps the 2.x API for consumers.
+  spec.add_dependency "jwt", "~> 2.10", ">= 2.10.3"
   spec.add_dependency "jwt-eddsa", "~> 0.9"
 
   spec.add_development_dependency "rspec", "~> 3.12"
