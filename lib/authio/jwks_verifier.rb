@@ -17,13 +17,26 @@ module Authio
     COOLDOWN = 30
 
     def initialize(api_url:, issuer:, audience:, project_id: nil, http: nil)
-      @api_url = api_url.to_s.sub(%r{/+\z}, "")
+      @api_url = self.class.strip_trailing_slashes(api_url)
       @issuer = issuer
       @audience = audience
       @project_id = project_id
       @http = http
       @keys = nil
       @fetched_at = 0
+    end
+
+
+    # Strip trailing slashes without a regex.
+    #
+    # `sub(%r{/+\z}, "")` backtracks polynomially on a string of many
+    # slashes (CodeQL rb/polynomial-redos). api_url is operator-configured
+    # rather than attacker-supplied, so the exposure is small, but a
+    # linear scan is just as short and cannot degrade.
+    def self.strip_trailing_slashes(value)
+      s = value.to_s
+      s = s[0..-2] while s.end_with?("/")
+      s
     end
 
     # @return [Hash] decoded JWT claims, e.g. { "sub" => "user_...", ... }

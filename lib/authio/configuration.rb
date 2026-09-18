@@ -22,11 +22,11 @@ module Authio
     end
 
     def effective_issuer
-      @issuer || @api_url.to_s.sub(%r{/+\z}, "")
+      @issuer || JwksVerifier.strip_trailing_slashes(@api_url)
     end
 
     def effective_api_url
-      @api_url.to_s.sub(%r{/+\z}, "")
+      JwksVerifier.strip_trailing_slashes(@api_url)
     end
   end
 end

@@ -94,7 +94,7 @@ module Authio
     # Build the hosted-UI URL for `mode=add_credential` passkey enrollment.
     def build_enroll_passkey_url(sign_in_url:, project_id:, email:, register_token:, return_url:, next: nil)
       next_path = binding.local_variable_get(:next)
-      base = sign_in_url.to_s.sub(%r{/+\z}, "")
+      base = JwksVerifier.strip_trailing_slashes(sign_in_url)
       params = [
         ["mode", "add_credential"],
         ["project_id", project_id],
@@ -128,7 +128,7 @@ module Authio
     end
 
     def api_request(access_token:, project_id:, api_url:, method:, path:, body: nil)
-      base = api_url.to_s.sub(%r{/+\z}, "")
+      base = JwksVerifier.strip_trailing_slashes(api_url)
       uri = URI("#{base}#{path}")
       req_class = Net::HTTP.const_get(method.capitalize)
       req = req_class.new(uri)
