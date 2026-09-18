@@ -30,6 +30,7 @@ module Authio
         api_url: configuration.effective_api_url,
         issuer: configuration.effective_issuer,
         audience: configuration.audience,
+        project_id: configuration.project_id,
       )
     end
 
