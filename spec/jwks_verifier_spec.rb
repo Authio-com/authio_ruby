@@ -81,3 +81,67 @@ RSpec.describe Authio::JwksVerifier do
     end
   end
 end
+
+# ---------------------------------------------------------------------
+# Tenant binding (security audit 2026-09-18). Signature + iss + aud prove
+# a token came from Authio, not that it was minted for this customer:
+# every tenant shares one signing key, issuer and audience.
+# ---------------------------------------------------------------------
+RSpec.describe "Authio::JwksVerifier tenant binding" do
+  let(:issuer) { "https://identity.authio.com" }
+  let(:audience) { "authio" }
+  let(:api_url) { "https://identity.authio.com" }
+  let(:signing_key) { Ed25519::SigningKey.new(SecureRandom.random_bytes(32)) }
+  let(:kid) { "test-eddsa-kid" }
+  let(:jwks) do
+    {
+      "keys" => [
+        {
+          "alg" => "EdDSA", "crv" => "Ed25519", "kid" => kid, "kty" => "OKP", "use" => "sig",
+          "x" => Base64.urlsafe_encode64(signing_key.verify_key.to_bytes, padding: false),
+        },
+      ],
+    }
+  end
+
+  before do
+    stub_request(:get, "#{api_url}/v1/auth/.well-known/jwks.json")
+      .to_return(status: 200, body: jwks.to_json, headers: {"Content-Type" => "application/json"})
+  end
+
+  def token_for(project_id)
+    claims = {
+      "sub" => "user_1", "iss" => issuer, "aud" => audience,
+      "exp" => Time.now.to_i + 600, "iat" => Time.now.to_i,
+    }
+    claims["project_id"] = project_id unless project_id.nil?
+    JWT.encode(claims, signing_key, "EdDSA", { kid: kid })
+  end
+
+  def verifier(project_id)
+    Authio::JwksVerifier.new(
+      api_url: api_url, issuer: issuer, audience: audience, project_id: project_id,
+    )
+  end
+
+  it "rejects a token minted in someone else's project" do
+    expect { verifier("proj_victim").verify(token_for("proj_attacker")) }
+      .to raise_error(/was issued for project/)
+  end
+
+  it "rejects a token carrying no project_id at all" do
+    expect { verifier("proj_victim").verify(token_for(nil)) }
+      .to raise_error(/was issued for project/)
+  end
+
+  it "accepts a token minted for the configured project" do
+    claims = verifier("proj_victim").verify(token_for("proj_victim"))
+    expect(claims["sub"]).to eq("user_1")
+  end
+
+  it "stays permissive but warns when no project_id is configured" do
+    v = verifier(nil)
+    expect(v).to receive(:warn).with(/no project_id configured/).once
+    expect(v.verify(token_for("proj_anyone"))["sub"]).to eq("user_1")
+  end
+end
