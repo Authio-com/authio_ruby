@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 # Tag-triggered RubyGems release. Pushing a git tag like `v0.1.0` runs specs,
 # builds the gem, and publishes to RubyGems.org when credentials are wired.
@@ -52,9 +53,14 @@ jobs:
             echo "::error::Configure trusted publishing or RUBYGEMS_API_KEY for a release tag"
             exit 1
           fi
+      - name: Configure RubyGems trusted publishing
+        if: env.RUBYGEMS_TRUSTED_PUBLISHING == 'true'
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v1.0.0
       - name: Publish to RubyGems (trusted publishing / OIDC)
         if: env.RUBYGEMS_TRUSTED_PUBLISHING == 'true'
-        uses: rubygems/release-gem@052cc82692552de3ef2b81fd670e41d13cba8092 # v1.4.0
+        run: |
+          gem build authio.gemspec
+          gem push authio-*.gem
       - name: Publish to RubyGems (legacy API key)
         if: env.RUBYGEMS_TRUSTED_PUBLISHING != 'true' && env.RUBYGEMS_API_KEY != ''
         run: |
