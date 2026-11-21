@@ -34,7 +34,7 @@ permissions:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # ruby/setup-ruby v1.9.0 does not recognise ubuntu-26.04 (ubuntu-latest)
     # Uncomment when the RubyGems trusted publisher specifies environment "release".
     # environment: release
     env:
